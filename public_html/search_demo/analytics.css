@@ -1,0 +1,104 @@
+@import url(http://fonts.googleapis.com/css?family=Karla);
+@import url(http://fonts.googleapis.com/css?family=Montserrat);
+
+body, html {
+	background: #EEE;
+	margin:0;
+	padding:0;
+
+	font-size: 16px;
+	font-family: 'Karla', sans-serif;
+}
+
+.header {
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	padding: 15px;
+	
+	background: #29527A;
+
+	color: white;
+}
+
+.title {
+	margin: 0px;
+	font-size: 36px;
+	font-family: 'Montserrat', sans-serif;
+}
+
+.navigation {
+	left: 0px;
+	right: 0px;
+	padding: 15px;
+		
+	background: #29527A;
+	box-shadow: 0px 3px 5px #222;
+
+	font-size: 24px;
+	color: white;
+}
+
+.navigation a:link, .navigation a:visited {
+	color: white;
+	text-decoration: none;
+}
+
+a:link, a:visited {
+	color: #29527A;
+	text-decoration: none;
+}
+
+.dashboard {
+	float: left;
+	width: 800px;
+	padding: 15px;
+	margin: 15px;
+		
+	background: #CCC;
+	box-shadow: 3px 3px 5px #222;
+	
+	color: black;
+}
+
+.dashboard_title {
+	margin: 10px 0px 10px;
+	font-size: 24px;
+}
+
+.dashboard ul {
+	margin: 0px, 20px;
+}
+
+.dashboard li {
+	margin: 5px
+}
+
+/* login pages */
+.user_settings {
+	position: fixed;
+	top: 10px;
+	right: 10px;
+}
+
+/* login page */
+.login_box {
+	font-family: Verdana, sans-serif;
+	background: #29527A;
+
+	position: fixed;
+	bottom: 100px;
+	right: 100px;
+	
+	padding: 15px;
+	
+	font-size: 15px;
+	text-align: right;
+	color: white;
+	box-shadow: 3px 3px 5px #222;
+}
+
+.login_box_body {
+	padding: 0px 0px 10px 0px;
+}
+

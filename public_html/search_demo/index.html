@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html>
+	<head>		
+        <meta charset="utf-8">
+		<link rel="stylesheet" type="text/css" href="analytics.css" />
+        <script type="text/javascript" src="jquery.js"></script>
+        <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+	    <script>
+	        google.load('visualization', '1', { packages: ['table'] });
+	        function search() {
+	            var query = $('#query_text').val();
+              // execute the search
+	            $.getJSON('/query/op-search?q=' + query, function (result) {
+	                // show results div
+	                $('#result').show()
+	                // first basic parameters
+	                $('#storeName').text(result.storeName);
+	                $('#hits').text(result.hits);
+	                // then fill the result table
+	                var data = new google.visualization.DataTable();
+	                data.addColumn('string', 'Name');
+	                data.addRows(result.records.length); rowN = 0;
+	                for (i in result.records) {
+	                    data.setCell(rowN, 0, result.records[rowN].recName); rowN++;
+	                }
+	                var table = new google.visualization.Table(document.getElementById('record_set'));
+	                table.draw(data, { showRowNumber: true });
+	            });
+	        }
+        </script>
+        <title>Newsfeed Search demo</title>
+	</head>
+	<body>	
+        <div class="header"><span class="title">Newsfeed Search demo</span></div>	
+
+        <div class="dashboard">
+            <div class="dashboard_title">Query</div>
+            <div class="query_form">
+                <textarea id="query_text" rows="5" cols="80">{"$from":"Article","Title":"Obama"}</textarea><br />
+                <input type="button" value="Search" onclick="search()" />
+            </div>
+        </div>
+
+        <div class="dashboard" id="result" style="display:none">
+            <p><b>Store:</b> <span id="storeName"></span>, <b>Hits:</b> <span id="hits"></span></p>
+            <div id='record_set'></div>
+        </div>
+	</body>
+</html>

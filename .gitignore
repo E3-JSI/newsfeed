@@ -1,0 +1,14 @@
+clean_output.html
+article_extractor/build/
+log/
+*.BROKEN.*
+*.o
+_crash_report.txt
+dispatch/cache*
+dispatch/output
+copyright_removal/*.txt
+copyright_removal/foo
+/geo
+/Scripts.txt
+article_extractor/evaluation/
+feed_mgmt/*

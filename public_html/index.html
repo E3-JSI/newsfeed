@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<style type="text/css">
+	body { width: 600px; margin: auto; padding: 50px; }
+	p, li, form { font-family: arial; font-size: 14px; line-height: 1.6em; }
+	p, form { margin: 14px 0; }
+	h1,h2,h3 { font-family: Georgia, serif; font-style:italic }
+	h2 { margin: 2em 0 0 0px; border-left: solid #666 30px; padding: 0 0 0 10px }
+	h3 { margin: 2em 0 0 0; border-left: solid #ccc 10px; padding: 0 0 0 10px }
+	pre { margin:-.5em 0 0 0; padding: 3px; background:#eee; border: solid #ccc 1px; white-space: pre-wrap }
+	.intag { font-family: serif; font-style:italic; color: #c33 }
+	.optional { font-family: arial black, serif; font-weight:bold; color: #3c3; vertical-align: super; font-size:70%; }
+	a { color: #39c; font-family: Georgia, serif; font-style: italic; text-decoration: none }
+	a:hover { text-decoration: underline; }
+</style>
+</head>
+
+<body>
+
+<img src="down-arrow.png" style="position:fixed; bottom: 30px; right: 50px;">
+
+<h1 style="margin-bottom: 40px">
+IJS newsfeed
+<div style="margin-top: 12px; color:#39c; font-weight:100; font-family: Arial; font-size: 16px; font-style:italic">a clean, continuous, real-time aggregated stream of semantically enriched news articles from RSS-enabled sites across the world.</div>
+</h1>
+
+<h2>What it Does</h2>
+<p>The pipeline performs the following main steps:</p>
+<ol><li> Periodically crawl a list of RSS feeds and a subset of Google News and obtain links to news articles
+</li><li> Download the articles, taking care not to overload any of the hosting servers
+</li><li> Parse each article to obtain
+<ol type="a"><li> Potential new RSS sources mentioned in the HTML, to be used in step (1)
+</li><li> Cleartext version of the article body
+</li></ol>
+</li><li> Process articles with <a href="http://enrycher.ijs.si" class="external text" rel="nofollow">Enrycher</a> (English and Slovene only)
+</li><li> Expose two streams of news articles (cleartext and Enrycher-processed) to end users.
+</li>
+</ol>
+
+<h2>Demo Visualization</h2>
+<p>Visit <a href="/visual_demo/">http://newsfeed.ijs.si/visual_demo/</a> for a real-time visualization of the news stream.</p>
+
+<h2>Accessing the stream</h2>
+<p>We currently offer two streams:
+<ul style="margin:0">
+	<li>all the articles, cleaned down to cleartext of article body; and</li>
+	<li>all english and slovene articles annotated with categorization and named entities as provided by <a href="http://enrycher.ijs.si">Enrycher</a>. 
+</ul>
+<p>Each stream of articles gets xml-formatted and segmented by time into <code>.gz</code> files, each a few MB in size.
+
+<p style="font-weight:bold">The streams are password-protected but free for research use.</b> To obtain a username, please contact Mitja Trampus and/or Blaz Novak at <a>firstname.lastname@ijs.si</a>.
+
+<p><b>Note:</b> Due to the streaming nature of the pipeline, the articles in the gzipped files are only approximately chronological;
+they are sorted in the order in which they were processed rather than published.
+
+<h3>Downloading the Stream - API</h3>
+<p>The stream is accessible at <a href="/stream/">http://newsfeed.ijs.si/stream/</a>.</b>
+The URL accepts an optional <code>?after=<i>TIMESTAMP</i></code> parameter, where <code><i>TIMESTAMP</i></code>
+takes the ISO format <code>yyyy-mm-ddThh:mm:ssZ</code> (<code>Z</code> denotes GMT timezone). The server will return
+the oldest gzip created later than <code><i>TIMESTAMP</i></code>. 
+<p> HTTP headers (<code>Content-disposition: attachment; filename="..."</code>) will contain the new gzip's filename which
+you can use to generate the next query, and so on. If the <code>after</code> parameter is too recent (no newer gzips available),
+HTTP 404 is returned. If no <code>after</code> is provided, the oldest available gzip is returned; we will attempt
+to maintain a month's worth of backlog.
+
+<h3>Downloading the Stream - Comfortably</h3>
+<p>You can also download our <a href="http2fs.py">python script</a> which uses the simple API
+described above to poll the server at one-minute intervals and copies new .gz files to the local disk as they
+are made available on the server.
+<p>A sample call for downloading the public stream (the default) into folder ijs_news:
+<pre>./http2fs.py -o ijs_news</pre>
+<p>This will download the whole available history and continue to follow the real-time stream. To follow the X-Like stream (only available to X-Like project partners), we provide an additinal stream URL besides the default one:
+<pre>./http2fs.py -o ijs_news -f http://newsfeed.ijs.si/stream/ -f http://newsfeed.ijs.si/stream/xlike</pre>
+
+<h3>Stream Contents and Format</h3>
+<p>To have a quick look at the real stream data, click either of the links in the API description above.
+<p>Each .gz file contains a single XML tree. The root element, <code>&lt;article-set></code>, contains zero or more articles in the following format:
+<pre>
+&lt;article id="<span class="intag">internal article ID; consistent across streams</span>"> 
+   &lt;source>
+      &lt;uri><span class="intag"> URL from which the article was discovered; typically the RSS feed </span>&lt;/uri> 
+      &lt;title><span class="intag"> Title for the source </span>&lt;/title> 
+      &lt;type><span class="intag"> MAINSTREAM_NEWS </span>&lt;/type> 
+      &lt;location<span class="optional">?</span>>
+         &lt;longitude><span class="intag"> publisher longitude in degrees </span>&lt;/longitude>
+         &lt;latitude><span class="intag"> publisher latitude in degrees </span>&lt;/latitude>
+         &lt;city<span class="optional">?</span>><span class="intag"> publisher city </span>&lt;/city>
+         &lt;country<span class="optional">?</span>><span class="intag"> publisher country </span>&lt;/country>
+      &lt;/location> 
+      &lt;tags<span class="optional">?</span>><span class="intag"> RSS-provided tags; the tag vocabulary is not controlled </span>
+         &lt;tag><span class="intag"> some_tag </span>&lt;/tag>
+         &lt;tag><span class="intag"> another_tag </span>&lt;/tag>
+      &lt;/tags>
+   &lt;/source>
+   &lt;uri><span class="intag"> URL from which the article was downloaded </span>&lt;/uri>
+   &lt;publish-date<span class="optional">?</span>><span class="intag"> The publication time and date.</span>&lt;/publish-date>
+   &lt;retrieve-date><span class="intag"> The retrieval time and date.</span>&lt;/retrieve-date>
+   &lt;lang><span class="intag"> 3-letter <a href="http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes">ISO 639-2</a> language code </span>&lt;/lang> 
+   &lt;location<span class="optional">?</span>>
+      &lt;longitude><span class="intag"> story content longitude in degrees </span>&lt;/longitude>
+      &lt;latitude><span class="intag"> story content latitude in degrees </span>&lt;/latitude>
+      &lt;city<span class="optional">?</span>><span class="intag"> story city </span>&lt;/city>
+      &lt;country<span class="optional">?</span>><span class="intag"> story country </span>&lt;/country>
+   &lt;/location> 
+   &lt;tags<span class="optional">?</span>><span class="intag"> RSS-provided tags; the tag vocabulary is not controlled </span>
+      &lt;tag><span class="intag"> some_tag </span>&lt;/tag>
+      &lt;tag><span class="intag"> another_tag </span>&lt;/tag>
+   &lt;/tags>
+   &lt;img<span class="optional">?</span>><span class="intag"> The URL of a related image, usually a thumbnail. </span>&lt;/img> 
+   &lt;title><span class="intag"> Title. Can be empty if we fail to identify it. </span>&lt;/title> 
+   &lt;body-cleartext>
+      <span class="intag"> Clear text body of the article, formatted only with <code>&lt;p> tags</code></span>
+   &lt;/body-cleartext> 
+   &lt;body-rych<span class="optional">?; only English, Slovene</span>>
+      <span class="intag"> Enriched article body; an XML subtree as returned by <a href="http://enrycher.ijs.si/">Enrycher</a>.</span>
+   &lt;/body-rych> 
+   &lt;body-xlike<span class="optional">?; only English, Spanish, Catalan</span>>
+      <span class="intag"> Enriched article body; an XML subtree as returned by iSOCO; experimental.</span>
+   &lt;/body-xlike> 
+&lt;/article>
+</pre>
+
+<p>Elements marked with <span class="optional">?</span> are omitted if the data is missing.
+<p>All times are in UTC and take the format <code>yyyy-mm-ddThh:mm:ssZ</code>.
+
+<h2>Querying the stream</h2>
+<p>The contents of Enrycher stream are being index and can be queried using a web service. The service is
+accessible at <code>/query/news-search</code> (JSon output) or <code>/query/news-search-xml</code> (XML output), and returns the latest (by time of arrival) 100 articles. The service accepts any combination of the following parameters:</p>
+<ul style="margin-top: -14px">
+    <li><code>q=slovenia hockey</code> &mdash; retrieve all articles with the words "<i>slovenia</i>" and "<i>hockey</i>" in the title or the body</li>
+    <li><code>qt=slovenia hockey</code> &mdash; retrieve all articles with "<i>slovenia</i>" and "<i>hockey</i>" in the title</li>
+    <li><code>qb=slovenia hockey</code> &mdash; retrieve all articles with "<i>slovenia</i>" and "<i>hockey</i>" in the body</li>
+    <li><code>cu=http://en.wikipedia.org/wiki/Slovenia</code> &mdash; retrieve all annotatied with "<i>Slovenia</i>" wikipedia page</li>
+    <li><code>cl=Slovenia</code> &mdash; with "<i>Slovenia</i>" named entity</li>
+    <li><code>lang=eng</code> &mdash; retrieve all English articles</li>
+    <li><code>date=2012-06-06</code> &mdash; retrieve all articles published on 16th of March, 2012</li>
+    <li><code>offset=3</code> &mdash; used to retrieve more than first 100 articles; for example, offset 3 returns articles from 301 to 400</li>
+</ul>
+<p>Example 1: <a href="/query/news-search?q=slovenia&lang=eng&date=2012-06-06"><code>/query/news-search?q=slovenia&lang=eng&date=2012-06-06</code></a></p>
+<p>Example 2: <a href="/query/news-search-xml?q=slovenia&lang=eng&date=2012-06-06"><code>/query/news-search-xml?q=slovenia&lang=eng&date=2012-06-06</code></a></p>
+<p>Example 3: <a href="/query/news-search?c=http://en.wikipedia.org/wiki/Slovenia&lang=eng&date=2012-06-06"><code>/query/news-search?c=http://en.wikipedia.org/wiki/Slovenia&lang=eng&date=2012-06-06</code></a></p>
+
+<h2>Try it</h2>
+<p>Try querying the pipeline and browsing retrieved articles using <a href="/search_demo/">newsfeed search</a>.</p>
+
+<h2>About</h2>
+<p>The pipeline has been developed and is being maintained by the <a href="http://ailab.ijs.si">Artificial Intelligence Laboratory</a> at <a href="http://www.ijs.si">Jozef Stefan Institute</a>, Slovenia. In case of questions, contact Mitja Trampus and/or Blaz Novak at <a>firstname.lastname@ijs.si</a>.
+<p><b>Referencing:</b> If you use newsfeed data, please reference it with the following paper:
+<div style="margin: -10px 0 0 20px">Trampus, Mitja and Novak, Blaz: <i>The Internals Of An Aggregated Web News Feed</i>. Proceedings of 15th Multiconference on Information Society 2012 (IS-2012). <a href="http://ailab.ijs.si/dunja/SiKDD2012/Papers/Trampus_Newsfeed.pdf" style="font-size:80%">[PDF]</a></div>
+<p>The development was supported in part by the <a href="http://render-project.eu">RENDER</a>, <a href="http://xlike.org">X-Like</a>, <a href="http://www.planet-data.eu/">PlanetData</a> and <a href="http://www.meta-net.eu">MetaNet</a> EU FP7 projects.
+
+</body>
+</html>
+
